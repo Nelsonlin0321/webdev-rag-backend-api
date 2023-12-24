@@ -9,6 +9,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from processor import PDFToSentenceEmbedding
 from mongodb_engine import MongoDB
+from payload import PayLoad
 dotenv.load_dotenv()
 
 embedding_generator = PDFToSentenceEmbedding()
@@ -59,34 +60,34 @@ def retrieve(question: str, file_name: str):
 
 
 @app.post(f"{PREFIX}/retrieval_generate")
-async def retrieval_generate(question, file_name):
-    try:
-        query_vector = embedding_generator.model.encode(question).tolist()
-        retrieved_results = mongo_db_engine.vector_search(
-            query_vector=query_vector, file_name=file_name)
-        prompt = utils.generate_prompt(retrieved_results)
+async def retrieval_generate(pay_load: PayLoad):
+    # try:
+    query_vector = embedding_generator.model.encode(pay_load.question).tolist()
+    retrieved_results = mongo_db_engine.vector_search(
+        query_vector=query_vector, file_name=pay_load.file_name)
+    prompt = utils.generate_prompt(retrieved_results)
 
-        completion = client.chat.completions.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {'role': 'system',
-                 'content': prompt,
-                 },
-                {"role": "user",
-                 "content": question}
-            ],
-            temperature=0,
-            stream=False
-        )
+    completion = client.chat.completions.create(
+        model='gpt-3.5-turbo',
+        messages=[
+            {'role': 'system',
+             'content': prompt,
+             },
+            {"role": "user",
+             "content": pay_load.question}
+        ],
+        temperature=0,
+        stream=False
+    )
 
-        return {"question": question,
-                "file_name": file_name,
-                "answer": completion.choices[0].message.content,
-                "uuid": str(uuid4())}
+    return {"question": pay_load.question,
+            "file_name": pay_load.file_name,
+            "answer": completion.choices[0].message.content,
+            "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
-    except Exception as e:
-        return {"message": "File upload failed", "error": str(e)}
+    # except Exception as e:
+    #     return {"message": "File upload failed", "error": str(e)}
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -94,7 +95,7 @@ start_time = datetime.utcnow()
 start_time = start_time.strftime(DATE_FORMAT)
 
 
-@app.get(f"{PREFIX}/health-check")
+@app.get(f"{PREFIX}/health_check")
 async def health_check():
     """_summary_
 
