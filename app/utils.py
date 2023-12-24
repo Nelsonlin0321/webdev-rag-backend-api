@@ -1,6 +1,6 @@
 import os
 import shutil
-import boto3
+
 TMP_DIR = "./temp"
 os.makedirs(TMP_DIR, exist_ok=True)
 
@@ -13,18 +13,18 @@ def save_file(file):
     return file_path
 
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-BUCKET_NAME = os.getenv("BUCKET_NAME")
-S3_PREFIX = os.getenv("S3_PREFIX")
+def generate_prompt(retrieved_results):
+    """_summary_
 
-s3 = boto3.client('s3',
-                  aws_access_key_id=AWS_ACCESS_KEY_ID,
-                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    Args:
+        retrieved_results (_type_): _description_
 
-
-def upload_to_s3(file):
-    key = os.path.join(S3_PREFIX, file.filename)
-    s3.upload_fileobj(file.file, BUCKET_NAME, key)
-    return BUCKET_NAME, key
+    Returns:
+        _type_: _description_
+    """
+    # pylint:disable=line-too-long
+    num_retrieved = len(retrieved_results)
+    retrieved_documents = "\n".join([
+        f"{idx+1}. Retrieved sentences: {retrieval['text']}" for idx, retrieval in enumerate(retrieved_results)])
+    prompt = f"Given the top {num_retrieved} retrieved document sentences, please generate a concise and accurate answer to the following question: \n {retrieved_documents}"
+    return prompt

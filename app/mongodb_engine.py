@@ -63,7 +63,7 @@ class MongoDB():
         collection = self.db[EMBEDDING_COLLECTION]
         collection.insert_many(doc_meta_list)
 
-    def vector_search(self, query_vector: List[float]) -> List[Dict]:
+    def vector_search(self, query_vector: List[float], file_name: str) -> List[Dict]:
         """_summary_
 
         Args:
@@ -81,7 +81,9 @@ class MongoDB():
                     "path": "embedding",
                     "queryVector": query_vector,
                     "numCandidates": 5,
-                    "limit": 5
+                    "limit": 5,
+
+                    "filter": {"fileName": {"$eq": file_name}}
                 }
 
             },
@@ -90,6 +92,7 @@ class MongoDB():
                 '$project': {
                     'embedding': 0,
                     "_id": 0,
+                    "score": {"$meta": "vectorSearchScore"},
                 }
 
             }
