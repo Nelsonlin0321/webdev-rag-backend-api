@@ -48,6 +48,9 @@ async def ingest_file(file: UploadFile = File(...)):
             return {"message":
                     f"The file: {file.filename} has been successfully ingested and processed!"}
 
+        return {"message":
+                f"The file: {file.filename} has been ingested and processed before!"}
+
     # pylint: disable=broad-exception-caught
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -62,34 +65,35 @@ def retrieve(question: str, file_name: str):
 
 @app.post(f"{PREFIX}/retrieval_generate")
 async def retrieval_generate(pay_load: PayLoad):
-    # try:
-    query_vector = embedding_generator.model.encode(pay_load.question).tolist()
-    retrieved_results = mongo_db_engine.vector_search(
-        query_vector=query_vector, file_name=pay_load.file_name)
+    try:
+        query_vector = embedding_generator.model.encode(
+            pay_load.question).tolist()
+        retrieved_results = mongo_db_engine.vector_search(
+            query_vector=query_vector, file_name=pay_load.file_name)
 
-    prompt = utils.generate_prompt(retrieved_results)
+        prompt = utils.generate_prompt(retrieved_results)
 
-    completion = client.chat.completions.create(
-        model='gpt-3.5-turbo-16k',
-        messages=[
-            {'role': 'system',
-             'content': prompt,
-             },
-            {"role": "user",
-             "content": pay_load.question}
-        ],
-        temperature=0,
-        stream=False
-    )
+        completion = client.chat.completions.create(
+            model='gpt-3.5-turbo-16k',
+            messages=[
+                {'role': 'system',
+                 'content': prompt,
+                 },
+                {"role": "user",
+                 "content": pay_load.question}
+            ],
+            temperature=0,
+            stream=False
+        )
 
-    return {"question": pay_load.question,
-            "file_name": pay_load.file_name,
-            "answer": completion.choices[0].message.content,
-            "uuid": str(uuid4())}
+        return {"question": pay_load.question,
+                "file_name": pay_load.file_name,
+                "answer": completion.choices[0].message.content,
+                "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
-    # except Exception as e:
-    #     return {"message": "File upload failed", "error": str(e)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
