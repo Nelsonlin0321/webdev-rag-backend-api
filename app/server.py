@@ -3,13 +3,14 @@ from datetime import datetime
 from uuid import uuid4
 from openai import OpenAI
 import dotenv
-import utils
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from processor import PDFToSentenceEmbedding
-from mongodb_engine import MongoDB
-from payload import PayLoad
+from .processor import PDFToSentenceEmbedding
+from .mongodb_engine import MongoDB
+from .payload import PayLoad
+from .import utils
+
 dotenv.load_dotenv()
 
 embedding_generator = PDFToSentenceEmbedding()

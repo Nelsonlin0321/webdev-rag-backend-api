@@ -1,0 +1,7 @@
+.env
+docker.env
+notebooks
+venv
+__pycache__
+temp
+images
