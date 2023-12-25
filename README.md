@@ -1,4 +1,4 @@
-# FastAPI PDF Retrieval and Question Answering
+# FastAPI PDF Retrieval Augmented Generation (RAG)
 
 ## Run Backend API Locally
 
