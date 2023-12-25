@@ -66,10 +66,11 @@ async def retrieval_generate(pay_load: PayLoad):
     query_vector = embedding_generator.model.encode(pay_load.question).tolist()
     retrieved_results = mongo_db_engine.vector_search(
         query_vector=query_vector, file_name=pay_load.file_name)
+
     prompt = utils.generate_prompt(retrieved_results)
 
     completion = client.chat.completions.create(
-        model='gpt-3.5-turbo',
+        model='gpt-3.5-turbo-16k',
         messages=[
             {'role': 'system',
              'content': prompt,
