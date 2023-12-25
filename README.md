@@ -20,7 +20,9 @@ image_name=rag-backend-api
 docker build -t ${image_name}:latest -f ./Dockerfile . --platform linux/arm64/v8
 docker run --env-file docker.env -p 8000:8000 -it --rm --name ${image_name} ${image_name}:latest
 ```
-## API Description
+## API Description and RAg Pipeline
+
+<img src="images/RAG-Pipeline.png">
 
 <img src="images/OpenAPI.png">
 
