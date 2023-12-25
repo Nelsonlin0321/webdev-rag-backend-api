@@ -4,7 +4,7 @@ from uuid import uuid4
 from openai import OpenAI
 import dotenv
 import uvicorn
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .processor import PDFToSentenceEmbedding
 from .mongodb_engine import MongoDB
@@ -50,7 +50,7 @@ async def ingest_file(file: UploadFile = File(...)):
 
     # pylint: disable=broad-exception-caught
     except Exception as e:
-        return {"message": "File upload failed", "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 def retrieve(question: str, file_name: str):
