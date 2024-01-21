@@ -4,12 +4,15 @@ from uuid import uuid4
 from openai import OpenAI
 import dotenv
 import uvicorn
+import boto3
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+# pylint:disable=relative-beyond-top-level
 from .processor import PDFToSentenceEmbedding
 from .mongodb_engine import MongoDB
 from .payload import PayLoad
-from .import utils
+# pylint:disable=no-name-in-module
+from . import utils
 
 dotenv.load_dotenv()
 
@@ -34,12 +37,33 @@ app.add_middleware(
 
 PREFIX = "/api"
 
+s3 = boto3.client('s3')
+
+
+def upload_file_to_s3(file_path, object_name):
+    """
+    Uploads a file to an S3 bucket.
+
+    Args:
+        file_path (str): The local file path of the file to upload.
+        bucket_name (str): The name of the S3 bucket.
+        object_name (str): The desired object name/key in the S3 bucket.
+    """
+    try:
+        s3.upload_file(file_path, "cloudfront-aws-bucket",
+                       os.path.join("rag-documents", object_name))
+    # pylint: disable=broad-exception-caught
+    except Exception as e:
+        print(
+            f"Error uploading file '{file_path}' to S3 bucket {str(e)}")
+
 
 @app.post(f"{PREFIX}/ingest")
 async def ingest_file(file: UploadFile = File(...)):
     try:
         if not mongo_db_engine.file_exist(file_name=file.filename):
             save_file_path = utils.save_file(file=file)
+            upload_file_to_s3(save_file_path, file.filename)
             doc_meta_list = embedding_generator(save_file_path)
             mongo_db_engine.insert_embedding(doc_meta_list)
             mongo_db_engine.insert_document(file_name=file.filename)
@@ -66,10 +90,17 @@ def retrieve(question: str, file_name: str):
 @app.post(f"{PREFIX}/retrieval_generate")
 async def retrieval_generate(pay_load: PayLoad):
     try:
+        if pay_load.context:
+            context = pay_load.context
+        else:
+            context = pay_load.question
+
         query_vector = embedding_generator.model.encode(
-            pay_load.question).tolist()
-        retrieved_results = mongo_db_engine.vector_search(
-            query_vector=query_vector, file_name=pay_load.file_name)
+            context).tolist()
+
+        retrieved_results = mongo_db_engine.hybrid_search(
+            query_vector=query_vector, query=context,
+            file_name=pay_load.file_name, limit=5)
 
         prompt = utils.generate_prompt(retrieved_results)
 
@@ -86,10 +117,12 @@ async def retrieval_generate(pay_load: PayLoad):
             stream=False
         )
 
-        return {"question": pay_load.question,
-                "file_name": pay_load.file_name,
-                "answer": completion.choices[0].message.content,
-                "uuid": str(uuid4())}
+        return {
+            "context": pay_load.context,
+            "question": pay_load.question,
+            "file_name": pay_load.file_name,
+            "answer": completion.choices[0].message.content,
+            "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
     except Exception as e:
