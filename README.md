@@ -39,8 +39,9 @@ Provide answers to user queries based on the previously ingested PDF document. E
 Example:
 ```json
 {
-  "question": "What are steps to take when finding projects to build your experience?",
-  "file_name": "eBook-How-to-Build-a-Career-in-AI.pdf"
+  "context": "Asset allocation with a duration",
+  "question": "Given the criteria, if the percentage of the portfolio with a duration longer than 7 years is less than 20%, answer me Yes or No, does this document satisfy this criteria? and copy the source from the retrieved sentences that you refer to",
+  "file_name": "SUNY RF - General Investment Policy and Guidelines.pdf"
 }
 ```
 

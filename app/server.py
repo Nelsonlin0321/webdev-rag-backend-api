@@ -6,10 +6,12 @@ import dotenv
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+# pylint:disable=relative-beyond-top-level
 from .processor import PDFToSentenceEmbedding
 from .mongodb_engine import MongoDB
 from .payload import PayLoad
-from .import utils
+# pylint:disable=no-name-in-module
+from . import utils
 
 dotenv.load_dotenv()
 
@@ -66,10 +68,17 @@ def retrieve(question: str, file_name: str):
 @app.post(f"{PREFIX}/retrieval_generate")
 async def retrieval_generate(pay_load: PayLoad):
     try:
+        if pay_load.context:
+            context = pay_load.context
+        else:
+            context = pay_load.question
+
         query_vector = embedding_generator.model.encode(
-            pay_load.question).tolist()
-        retrieved_results = mongo_db_engine.vector_search(
-            query_vector=query_vector, file_name=pay_load.file_name)
+            context).tolist()
+
+        retrieved_results = mongo_db_engine.hybrid_search(
+            query_vector=query_vector, query=context,
+            file_name=pay_load.file_name, limit=5)
 
         prompt = utils.generate_prompt(retrieved_results)
 
