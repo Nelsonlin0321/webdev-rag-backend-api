@@ -40,8 +40,7 @@ Example:
 ```json
 {
   "context": "Asset allocation with a duration",
-  "question": "Given the criteria, if the percentage of the portfolio with a duration longer than 7 years is less than 20%, answer me Yes or No, does this document satisfy this criteria? and copy the source from the retrieved sentences that you refer to",
+  "question": "Given the criteria, if the percentage of the portfolio with a duration longer than 7 years is less than 20%, answer me Yes or No, does this document satisfy this criteria?",
   "file_name": "SUNY RF - General Investment Policy and Guidelines.pdf"
 }
 ```
-
