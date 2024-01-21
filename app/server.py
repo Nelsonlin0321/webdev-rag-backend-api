@@ -116,12 +116,16 @@ async def retrieval_generate(pay_load: PayLoad):
             temperature=0,
             stream=False
         )
+        answer = completion.choices[0].message.content
+
+        page_number = utils.get_pag_number(answer)
 
         return {
             "context": pay_load.context,
             "question": pay_load.question,
             "file_name": pay_load.file_name,
-            "answer": completion.choices[0].message.content,
+            "answer": answer,
+            "page_number": page_number,
             "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
