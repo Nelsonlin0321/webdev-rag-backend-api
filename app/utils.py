@@ -39,8 +39,8 @@ def generate_prompt(retrieved_results):
 
     context_json = json.dumps(context_dict)
 
-    prompt = "Given retrieved document content with page number in json format, please generate a concise and accurate answer to the following question with a page number to indicate where the evidence is. The answer should follow below template: Answer: {Answer} Page Number->{page_number}." + \
-        f"\n {context_json}"
+    prompt = "Given retrieved document content with page number in json format, please generate a concise and accurate answer to the following question with a page number to indicate where the evidence is. " + \
+        f"\n Retrieved document content: {context_json}"
     return prompt
 
 

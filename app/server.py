@@ -111,7 +111,10 @@ async def retrieval_generate(pay_load: PayLoad):
                  'content': prompt,
                  },
                 {"role": "user",
-                 "content": pay_load.question}
+                 "content": pay_load.question},
+                {"role": "user",
+                 "content":
+                 "The answer should follow below template: Answer: {Answer} Page Number->{page_number}."}
             ],
             temperature=0,
             stream=False
