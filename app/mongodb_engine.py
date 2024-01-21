@@ -77,7 +77,8 @@ class MongoDB():
         # if not self.file_exist(file_name):
         collection = self.db[DOCUMENT_COLLECTION]
         collection.insert_one(
-            {'fileName': file_name})
+            {'fileName': file_name,
+             "fileUrl": f"https://d2gewc5xha837s.cloudfront.net/rag-documents/{file_name}"})
 
     def insert_embedding(self, doc_meta_list) -> List:
         # if not self.file_exist(file_name):
