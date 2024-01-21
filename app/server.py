@@ -95,10 +95,12 @@ async def retrieval_generate(pay_load: PayLoad):
             stream=False
         )
 
-        return {"question": pay_load.question,
-                "file_name": pay_load.file_name,
-                "answer": completion.choices[0].message.content,
-                "uuid": str(uuid4())}
+        return {
+            "context": pay_load.context,
+            "question": pay_load.question,
+            "file_name": pay_load.file_name,
+            "answer": completion.choices[0].message.content,
+            "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
     except Exception as e:
