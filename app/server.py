@@ -89,51 +89,51 @@ def retrieve(question: str, file_name: str):
 
 @app.post(f"{PREFIX}/retrieval_generate")
 async def retrieval_generate(pay_load: PayLoad):
-    try:
-        if pay_load.context:
-            context = pay_load.context
-        else:
-            context = pay_load.question
+    # try:
+    if pay_load.context:
+        context = pay_load.context
+    else:
+        context = pay_load.question
 
-        query_vector = embedding_generator.model.encode(
-            context).tolist()
+    query_vector = embedding_generator.model.encode(
+        context).tolist()
 
-        retrieved_results = mongo_db_engine.hybrid_search(
-            query_vector=query_vector, query=context,
-            file_name=pay_load.file_name, limit=5)
+    retrieved_results = mongo_db_engine.hybrid_search(
+        query_vector=query_vector, query=context,
+        file_name=pay_load.file_name, limit=5)
 
-        prompt = utils.generate_prompt(retrieved_results)
+    prompt = utils.generate_prompt(retrieved_results)
 
-        completion = client.chat.completions.create(
-            model='gpt-3.5-turbo-16k',
-            messages=[
-                {'role': 'system',
-                 'content': prompt,
-                 },
-                {"role": "user",
-                 "content": pay_load.question},
-                {"role": "user",
-                 "content":
-                 "The answer should follow below template: Answer: {Answer} Page Number->{page_number}."}
-            ],
-            temperature=0,
-            stream=False
-        )
-        answer = completion.choices[0].message.content
+    completion = client.chat.completions.create(
+        model='gpt-3.5-turbo-16k',
+        messages=[
+            {'role': 'system',
+                'content': prompt,
+             },
+            {"role": "user",
+                "content": pay_load.question},
+            {"role": "user",
+                "content":
+                "The answer should follow below template: Answer: {Answer} Page Number->{page_number}."}
+        ],
+        temperature=0,
+        stream=False
+    )
+    answer = completion.choices[0].message.content
 
-        page_number = utils.get_pag_number(answer)
+    page_number = utils.get_pag_number(answer)
 
-        return {
-            "context": pay_load.context,
-            "question": pay_load.question,
-            "file_name": pay_load.file_name,
-            "answer": answer,
-            "page_number": page_number,
-            "uuid": str(uuid4())}
+    return {
+        "context": pay_load.context,
+        "question": pay_load.question,
+        "file_name": pay_load.file_name,
+        "answer": answer,
+        "page_number": page_number,
+        "uuid": str(uuid4())}
 
     # pylint: disable=broad-exception-caught
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
