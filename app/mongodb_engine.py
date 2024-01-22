@@ -19,17 +19,38 @@ DOCUMENT_COLLECTION = "Document"
 
 
 def normalized_score(df):
+    if len(df) == 0:
+        df['normalized_score'] = None
+        return df
     max_score = max(df['score'])
     min_score = min(df['score'])
-    df['normalized_score'] = df['score'].apply(
-        lambda x: (x-min_score)/(max_score-min_score))
+    if (max_score-min_score) == 0:
+        df['normalized_score'] = df['score']
+    else:
+        df['normalized_score'] = df['score'].apply(
+            lambda x: (x-min_score)/(max_score-min_score))
     return df
+
+
+columns = ["fileName", "textIdx", "pageLabel", "text", "score"]
+df_empty = pd.DataFrame(columns=columns)
 
 
 def combine_vector_keyword_search(vector_search_results, keyword_search_results, limit: int = 5):
 
+    if len(vector_search_results) == 0 and len(keyword_search_results) == 0:
+        return []
+
     df_keyword_search = pd.DataFrame(keyword_search_results)
     df_vector_search = pd.DataFrame(vector_search_results)
+
+    if len(vector_search_results) == 0:
+        results = df_keyword_search.to_dict(orient='records')
+        return results
+
+    if len(keyword_search_results) == 0:
+        results = df_vector_search.to_dict(orient='records')
+        return results
 
     both_hit_indices = set(df_vector_search[['textIdx']].merge(
         df_keyword_search[['textIdx']])['textIdx'])
