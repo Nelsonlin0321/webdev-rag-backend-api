@@ -95,8 +95,7 @@ async def retrieval_generate(pay_load: PayLoad):
     else:
         context = pay_load.question
 
-    query_vector = embedding_generator.model.encode(
-        context).tolist()
+    query_vector = embedding_generator.get_embeddings([context])[0]
 
     retrieved_results = mongo_db_engine.hybrid_search(
         query_vector=query_vector, query=context,
@@ -105,7 +104,7 @@ async def retrieval_generate(pay_load: PayLoad):
     prompt = utils.generate_prompt(retrieved_results)
 
     completion = client.chat.completions.create(
-        model='gpt-3.5-turbo-16k',
+        model='gpt-4o-mini',
         messages=[
             {'role': 'system',
                 'content': prompt,

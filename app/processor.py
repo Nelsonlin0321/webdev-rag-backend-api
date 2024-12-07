@@ -1,7 +1,8 @@
 """PDT to sentence embedding"""
-from sentence_transformers import SentenceTransformer
+import os
+from typing import List
+import requests
 from llama_index import SimpleDirectoryReader
-
 
 class PDFToSentenceEmbedding():
     """_summary_
@@ -10,7 +11,8 @@ class PDFToSentenceEmbedding():
     def __init__(self):
         """_summary_
         """
-        self.model = SentenceTransformer('BAAI/bge-small-en-v1.5')
+        self.api_url = "https://api-inference.huggingface.co/models/BAAI/bge-small-en-v1.5"
+        self.hf_token = os.environ['HF_TOKEN']
 
     def load_document(self, file_path):
         """_summary_
@@ -38,15 +40,27 @@ class PDFToSentenceEmbedding():
         """
         documents = self.load_document(file_path)
         texts = [doc.text for doc in documents]
-        embeddings = self.model.encode(texts, normalize_embeddings=True)
+        embeddings = self.get_embeddings(texts)
         document_meta_list = [{"fileName": doc.metadata['file_name'],
                                "textIdx": idx,
                                "pageLabel": doc.metadata['page_label'],
                                "text": doc.text,
-                               "embedding": embeddings[idx].tolist(),
+                               "embedding": embeddings[idx],
                                } for idx, doc in enumerate(documents)]
         return document_meta_list
 
     def __call__(self, file_path):
         document_meta_list = self.generate_embedding(file_path)
         return document_meta_list
+
+    def get_embeddings(self,texts:List[str]):
+
+        headers = {"Authorization": f"Bearer {self.hf_token}"}
+
+        def query(payload):
+            response = requests.post(self.api_url, headers=headers, json=payload,timeout=360)
+            return response.json()
+        output = query({
+            "inputs": texts,
+        })
+        return output
