@@ -13,6 +13,7 @@ from .mongodb_engine import MongoDB
 from .payload import PayLoad
 # pylint:disable=no-name-in-module
 from . import utils
+from loguru import logger
 
 dotenv.load_dotenv()
 
@@ -54,7 +55,7 @@ def upload_file_to_s3(file_path, object_name):
                        os.path.join("rag-documents", object_name))
     # pylint: disable=broad-exception-caught
     except Exception as e:
-        print(
+        logger.warning(
             f"Error uploading file '{file_path}' to S3 bucket {str(e)}")
 
 
@@ -99,7 +100,7 @@ async def retrieval_generate(pay_load: PayLoad):
 
     retrieved_results = mongo_db_engine.hybrid_search(
         query_vector=query_vector, query=context,
-        file_name=pay_load.file_name, limit=5)
+        file_name=pay_load.file_name, limit=10)
 
     prompt = utils.generate_prompt(retrieved_results)
 

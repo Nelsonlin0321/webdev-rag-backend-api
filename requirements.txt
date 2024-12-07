@@ -10,3 +10,4 @@ pypdf
 boto3
 pandas
 llama-index-readers-file
+loguru
