@@ -2,7 +2,7 @@ openai
 python-dotenv
 uvicorn
 fastapi
-llama-index
+llama-index-core
 pymongo
 python-multipart
 gunicorn

@@ -2,7 +2,7 @@
 import os
 from typing import List
 import requests
-from llama_index import SimpleDirectoryReader
+from llama_index.core import SimpleDirectoryReader
 
 class PDFToSentenceEmbedding():
     """_summary_
